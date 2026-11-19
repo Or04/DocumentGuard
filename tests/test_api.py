@@ -14,10 +14,8 @@ def doc():
     return output.getvalue()
 
 def post(content=None, name='test.docx', rules=None, key=KEY):
-    fields = {'rules': json.dumps(rules if rules is not None else ['Flag numerical detection range']), 'api_key': key}
-    if key is None:
-        del fields['api_key']
-    return client.post('/api/analyze', files={'file': (name, content if content is not None else doc(), 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')}, data=fields)
+    fields = {'rules': json.dumps(rules if rules is not None else ['Flag numerical detection range'])}
+    return client.post('/api/analyze', files={'file': (name, content if content is not None else doc(), 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')}, data=fields, headers={'Authorization': 'Bearer ' + key} if key is not None else {})
 
 def test_home():
     response = client.get('/')
@@ -29,7 +27,7 @@ def test_health():
     assert client.get('/health').json()['auth'] == 'bring-your-own-key'
 
 def test_missing_key():
-    assert post(key=None).status_code == 422
+    assert post(key=None).status_code == 400
 
 def test_invalid_key():
     assert post(key='bad').status_code == 400
