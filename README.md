@@ -16,8 +16,6 @@ Upload a DOCX · Write rules in plain English · Inspect potential violations ·
 
 ![DocumentGuard AI interface mockup with document upload, review rules and evidence-backed findings](assets/product-mockup.svg)
 
-*Static product mockup with fictional sample data. This is a visual preview, not a live demo or an AI result.*
-
 ## Try it in 60 seconds
 
 | Step | What the reviewer does | What to expect |
