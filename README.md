@@ -64,6 +64,7 @@ flowchart LR
 | **Understand the prompts** | **[Actual detection and verification prompts](docs/PROMPTS.md)** |
 | **See the architecture and security boundaries** | [Architecture](docs/ARCHITECTURE.md) |
 | **Read design trade-offs** | [Engineering decisions](docs/ENGINEERING.md) |
+| **Explore the product planning conversation** | [Product Planning Conversation](docs/Product_Planning_Conversation.html) |
 | **Inspect test coverage and limitations** | [QA / E2E report](docs/TESTING.md) |
 | **Review agent integration** | [Agent skill](skills/documentguard/SKILL.md) |
 | **Check delivery readiness** | [Delivery status](docs/DELIVERY_STATUS.md) |
