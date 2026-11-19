@@ -1,64 +1,90 @@
+<div align="center">
+
 # DocumentGuard AI
 
-**Evidence-first DOCX compliance review** · AI Engineer take-home assignment · Bring Your Own Key (BYOK)
+**Review Word documents against your own compliance rules, with source-grounded evidence.**
 
-Upload an English-language `.docx`, define arbitrary natural-language rules, and inspect source-grounded violations. DocumentGuard uses an AI model for semantic interpretation and deterministic source checks for provenance. It is **not** a deterministic guarantee of compliance.
+Upload a DOCX · Write rules in plain English · Inspect potential violations · Export findings
 
-**[Architecture](docs/ARCHITECTURE.md) · [QA report](docs/TESTING.md) · [Engineering decisions](docs/ENGINEERING.md) · [Agent skill](skills/documentguard/SKILL.md) · [Prompts](docs/PROMPTS.md)**
+[![Open live app](https://img.shields.io/badge/OPEN_LIVE_APP-2563EB?style=for-the-badge)](https://documentguard-ai.vercel.app)
+[![Try sample document](https://img.shields.io/badge/GET_SAMPLE_DOCX-0F766E?style=for-the-badge)](assets/sample.docx)
+[![View our AI prompts](https://img.shields.io/badge/VIEW_AI_PROMPTS-334155?style=for-the-badge)](docs/PROMPTS.md)
+[![Architecture](https://img.shields.io/badge/ARCHITECTURE-64748B?style=for-the-badge)](docs/ARCHITECTURE.md)
 
-## Customer experience
+</div>
 
-1. Open the app, select **Connect key**, and enter your own OpenAI API key. The key is never shown again or stored persistently. Reconnecting first disconnects the old key; refreshing the page clears it.
-2. Select a `.docx` (max **5 MB**) and enter **1–15 English rules**. Example: `Flag statements disclosing numerical operational capability or detection range.`
-3. Run semantic review, inspect exact source quotations, paragraph/table location, associated rule, explanation, and status.
-4. Export findings as JSON. Zero findings **does not prove compliance**. Findings marked `needs_human_review` require a reviewer.
+## See the workflow
 
-No demo/heuristic mode is available. A key is needed for every analysis session. There is no built-in key and **no OpenAI environment variable required on Vercel**.
+![Animated walkthrough of DocumentGuard: connect customer key, upload a Word document, define a rule, review an evidence-backed finding. Illustrative UI sequence using a mocked AI response.](assets/live-demo.gif)
 
-## Architecture
+*Animated product walkthrough (illustrative; AI response mocked). For a real analysis, use the [live application](https://documentguard-ai.vercel.app) and your own OpenAI key. This GIF is **not** proof of live model accuracy.*
+
+## Try it in 60 seconds
+
+| Step | What the reviewer does | What to expect |
+|:---:|---|---|
+| **01** | [Open the application](https://documentguard-ai.vercel.app) and select **Connect key** | Enter your **own** OpenAI API key in a hidden field. No shared or preloaded key. |
+| **02** | [Download the sample DOCX](assets/sample.docx) and upload it | The app accepts text-based Word documents up to **5 MB**, including tables. |
+| **03** | Enter a rule: `Flag statements disclosing numerical operational capability or detection range.` | Rules are interpreted semantically by the model, not matched with a fixed regex list. |
+| **04** | Select **Run analysis** | See rule, exact quote, paragraph/table location, explanation and review status. |
+| **05** | Inspect the evidence and **Export JSON** | Human review remains necessary for uncertain or high-stakes findings. |
+
+> **Privacy / key handling:** The key is held in browser memory for the current page session, sent over HTTPS to the FastAPI backend for the analysis request, and not stored by this app. Refreshing or disconnecting clears it. Do **not** paste a key into GitHub issues, README files, screenshots or support tickets. Uploaded documents and request contents still pass through the hosting provider and OpenAI; confirm your organization's data policies before using sensitive documents.
+
+## What the product does
+
+| Capability | Included |
+|---|---|
+| Arbitrary natural-language rules | **Yes**, 1–15 English rules per review |
+| DOCX paragraphs and tables | **Yes**, with block-level location |
+| Evidence grounding | **Yes**, candidate quotes must exactly occur in the referenced source block |
+| Independent semantic second pass | **Yes**, with confirmed / uncertain / rejected outcomes |
+| Bring Your Own Key | **Yes**, no bundled API key and no persistent key storage |
+| JSON export | **Yes** |
+| OCR, images, text boxes and tracked-change interpretation | **Not comprehensively supported** |
+| Deterministic guarantee of semantic correctness | **No** |
+
+### How it works
 
 ```mermaid
-flowchart TD
-  U[Browser UI] -->|DOCX + rules + request-scoped API key over HTTPS| A[FastAPI /api/analyze]
-  A --> I[Validate file, key format and rules]
-  I --> D[Parse DOCX paragraphs and tables]
-  D --> C[Chunk source blocks + rule IDs]
-  C -->|Untrusted document data| L[OpenAI semantic reviewer]
-  L -->|Candidate findings| V[Deterministic evidence validation]
-  V -->|Valid quote + block + rule| S[Independent AI semantic review]
-  S -->|confirmed / uncertain / rejected| R[Evidence-backed results]
-  R --> U
-  K[Key in JS memory only] -.-> U
+flowchart LR
+  A["DOCX + rules + customer key"] --> B["FastAPI validation"]
+  B --> C["DOCX text / table extraction"]
+  C --> D["LLM: candidate violations"]
+  D --> E{"Exact quote, block and rule match?"}
+  E -->|No| F["Reject unsupported finding"]
+  E -->|Yes| G["Independent semantic review"]
+  G --> H["Evidence-backed findings + JSON export"]
 ```
 
-**Critical distinction:** Exact quote verification is deterministic; the model's interpretation of the rule remains probabilistic, including at temperature 0. The skeptical second pass is another model judgment, not a mathematical proof. See [architecture and security](docs/ARCHITECTURE.md).
+**The model decides semantic relevance; code checks evidence provenance.** Exact-quote matching is deterministic, but semantic accuracy and completeness are not. The second LLM pass is another judgment, not a proof.
 
-## Start locally
+## Reviewer shortcuts
+
+| I want to… | Open |
+|---|---|
+| **Try the product** | [Live application](https://documentguard-ai.vercel.app) |
+| **Understand the prompts** | **[Actual detection and verification prompts](docs/PROMPTS.md)** |
+| **See the architecture and security boundaries** | [Architecture](docs/ARCHITECTURE.md) |
+| **Read design trade-offs** | [Engineering decisions](docs/ENGINEERING.md) |
+| **Inspect test coverage and limitations** | [QA / E2E report](docs/TESTING.md) |
+| **Review agent integration** | [Agent skill](skills/documentguard/SKILL.md) |
+| **Check delivery readiness** | [Delivery status](docs/DELIVERY_STATUS.md) |
+
+## Run locally
 
 Requires Python 3.11+.
 
 ```bash
 python -m venv .venv
-source .venv/bin/activate             # Windows: .venv\Scripts\activate
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 uvicorn app.main:app --host 127.0.0.1 --port 8000
 ```
 
-Open **http://127.0.0.1:8000**. Connect your own OpenAI API key in the UI. **Never put your key into this repository or any GitHub issue.** For the optional agent skill CLI only, set the key in the shell environment securely.
+Open **http://127.0.0.1:8000** and connect your own key inside the UI. The web app does **not** need an `OPENAI_API_KEY` server environment variable.
 
-## API
-
-`POST /api/analyze` multipart form-data:
-
-| Field | Type | Constraint |
-|---|---|---|
-| `file` | DOCX binary | 1–5 MB, DOCX ZIP validation |
-| `rules` | JSON string array | 1–15 rules, 8–500 characters each |
-| `api_key` | secret form field | OpenAI key supplied per request, not stored |
-
-Success JSON contains `violations`, `count`, `rejected_unverified`, `blocks_scanned`, `rules_scanned`, and `engine`. Each violation includes `rule_id`, `rule`, `block_id`, `location`, `quote`, `explanation`, and `status` (`evidence_verified` or `needs_human_review`). Errors are sanitized before returning them to the browser.
-
-## Run quality gates
+### Run tests
 
 ```bash
 pip install -r requirements-dev.txt
@@ -66,30 +92,12 @@ python -m playwright install chromium
 pytest -q
 ```
 
-Browser tests run in real Chromium, including a full application-layer flow from the UI through the FastAPI endpoint, DOCX parser, grounded finding validation and response rendering. Both E2E tests mock the external OpenAI API and do not require a paid key. Other tests exercise HTTP validation, security and model orchestration. **No live OpenAI accuracy or billing test was executed**; see [QA report](docs/TESTING.md). A real customer trial needs an authorized key and approved non-sensitive sample document.
+Browser tests exercise real Chromium and the FastAPI route with a **mocked OpenAI response**. They validate the application workflow, not live model quality. See the [test report](docs/TESTING.md) for verified coverage and gaps.
 
-## Deploy to Vercel
+## API at a glance
 
-Deploy this repo as a Python/FastAPI project, with the project root set to the repository root. `app/main.py` exposes `app`. Production must use HTTPS, and you should inspect runtime timeouts and resource limits. **Do not configure `OPENAI_API_KEY` on Vercel for the web app**; every customer supplies their own key through the UI. No customer key is bundled with code or committed to GitHub.
+`POST /api/analyze` accepts multipart form fields `file` (DOCX, max 5 MB), `rules` (JSON array of 1–15 rules), and `api_key` (request-scoped customer key). The response includes `violations`, `count`, `rejected_unverified`, `blocks_scanned` and `rules_scanned`. A finding contains `rule_id`, `block_id`, `location`, `quote`, `explanation` and `status`.
 
-The app is stateless and does not persist uploaded documents, results, or keys. Nevertheless, request contents are processed by Vercel and OpenAI; consult your organization's data-processing and retention rules before uploading sensitive documents. This implementation is a single-user request flow; it does not provide authentication, quotas, DLP, audit history, or a documented retention agreement.
+**Production note:** This is a stateless request flow, not a complete enterprise DLP/compliance platform. It does not include authentication, persistent audit trails, quotas, OCR or a calibrated live-provider precision/recall evaluation. Do not treat zero findings as proof of compliance.
 
-## Project structure
-
-| Path | Purpose |
-|---|---|
-| `app/main.py` | Stateless HTTP boundary and sanitized errors |
-| `app/core.py` | DOCX parser, rule normalization, model orchestration, evidence verification |
-| `app/static/index.html` | Responsive UI, in-memory BYOK, client-side rendering and JSON export |
-| `tests/` | Unit, HTTP integration, security and browser UI E2E |
-| `.github/workflows/test.yml` | CI gates including Chromium and secret-pattern checks |
-| `skills/documentguard/` | Agent skill and CLI integration |
-| `docs/` | Architecture, design decisions, prompts, reproducible QA and limitations |
-
-## Important limitations
-
-- Text-based DOCX paragraphs and tables are supported; images, handwriting, text boxes, tracked-change semantics and headers/footers are not comprehensively extracted.
-- Context is chunked into groups of 35 blocks; cross-chunk reasoning may be incomplete.
-- Files with many blocks or findings can exceed serverless execution time or provider quota. No background-job queue is included.
-- Zero findings is not proof of compliance; professional review remains essential for high-impact disclosures.
-- A real-provider evaluation corpus is needed to estimate recall/precision, false positives and omissions.
+<sub>DocumentGuard AI · Evidence first · Customer-owned keys · Transparent QA</sub>
