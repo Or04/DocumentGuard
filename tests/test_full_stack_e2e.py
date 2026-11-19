@@ -51,12 +51,12 @@ def test_real_browser_real_backend_mocked_provider(monkeypatch, tmp_path):
             requests.append(request)
             # Playwright omits multipart File bytes in intercepted post_data_buffer.
             # Reinsert the already selected test DOCX; the remaining multipart fields
-            # (including the user-supplied API key and rules) are forwarded intact.
+            # (including the rules) are forwarded intact.
             raw = request.post_data_buffer
             content_type = b'Content-Type: application/vnd.openxmlformats-officedocument.wordprocessingml.document\r\n\r\n'
             assert content_type + b'\r\n--' in raw
             body = raw.replace(content_type + b'\r\n--', content_type + file.read_bytes() + b'\r\n--', 1)
-            response = backend.post('/api/analyze', content=body, headers={'content-type': request.headers['content-type']})
+            response = backend.post('/api/analyze', content=body, headers={'content-type': request.headers['content-type'], 'authorization': request.headers['authorization']})
             route.fulfill(status=response.status_code, headers={'content-type': 'application/json', 'access-control-allow-origin': '*'}, body=response.text)
 
         page.route('https://documentguard.test/api/analyze', forward)
@@ -69,6 +69,7 @@ def test_real_browser_real_backend_mocked_provider(monkeypatch, tmp_path):
         assert '50 km' in page.locator('.quote').inner_text()
         assert 'Evidence verified' in page.locator('.verified').inner_text()
         assert received == [secret]
+        assert secret.encode() not in requests[0].post_data_buffer
         assert len(requests) == 1
         assert secret not in page.locator('body').inner_text()
         browser.close()
