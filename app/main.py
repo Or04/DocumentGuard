@@ -2,13 +2,21 @@
 import json
 from pathlib import Path
 
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import FastAPI, File, Form, Header, HTTPException, UploadFile
 from fastapi.responses import FileResponse
 
 from .core import MAX_BYTES, analyze, parse_docx, validate_rules
 
 app = FastAPI(title="DocumentGuard AI", version="1.1.0", docs_url=None, redoc_url=None)
 STATIC = Path(__file__).parent / "static"
+
+@app.middleware("http")
+async def no_store_analysis(request, call_next):
+    response = await call_next(request)
+    if request.url.path == "/api/analyze":
+        response.headers["Cache-Control"] = "no-store, private"
+        response.headers["Pragma"] = "no-cache"
+    return response
 
 
 @app.get("/")
@@ -25,11 +33,12 @@ def health():
 async def analyze_file(
     file: UploadFile = File(...),
     rules: str = Form(...),
-    api_key: str = Form(...),
+    authorization: str | None = Header(default=None),
 ):
     if not file.filename or not file.filename.lower().endswith(".docx"):
         raise HTTPException(400, "Only .docx files are supported")
     # Never echo the user's key, document text, provider exception or request body.
+    api_key = authorization[7:] if authorization and authorization.startswith("Bearer ") else ""
     if not api_key or not api_key.startswith("sk-") or len(api_key) < 16 or len(api_key) > 512 or any(c.isspace() for c in api_key):
         raise HTTPException(400, "Enter a valid OpenAI API key to analyze this document")
     try:
