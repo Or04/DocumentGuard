@@ -26,7 +26,7 @@ Upload a DOCX · Write rules in plain English · Inspect potential violations ·
 | **04** | Select **Run analysis** | See rule, exact quote, paragraph/table location, explanation and review status. |
 | **05** | Inspect the evidence and **Export JSON** | Human review remains necessary for uncertain or high-stakes findings. |
 
-> **Privacy / key handling:** The key is held in browser memory for the current page session, sent over HTTPS to the FastAPI backend for the analysis request, and not stored by this app. Refreshing or disconnecting clears it. Do **not** paste a key into GitHub issues, README files, screenshots or support tickets. Uploaded documents and request contents still pass through the hosting provider and OpenAI; confirm your organization's data policies before using sensitive documents.
+> **Privacy / key handling:** The key is held in browser memory for the current page session, sent over HTTPS in the `Authorization` header to the FastAPI backend for the analysis request, and not stored by this app. The key is not included in multipart form data, URLs, or application responses. **Infrastructure can still log request headers if configured to do so**: disable or redact `Authorization` in reverse-proxy, hosting, tracing, error-reporting, and APM logs before using real keys. Refreshing or disconnecting clears it. Do **not** paste a key into GitHub issues, README files, screenshots or support tickets. Uploaded documents and request contents still pass through the hosting provider and OpenAI; confirm your organization's data policies before using sensitive documents.
 
 ## What the product does
 
@@ -94,7 +94,7 @@ Browser tests exercise real Chromium and the FastAPI route with a **mocked OpenA
 
 ## API at a glance
 
-`POST /api/analyze` accepts multipart form fields `file` (DOCX, max 5 MB), `rules` (JSON array of 1–15 rules), and `api_key` (request-scoped customer key). The response includes `violations`, `count`, `rejected_unverified`, `blocks_scanned` and `rules_scanned`. A finding contains `rule_id`, `block_id`, `location`, `quote`, `explanation` and `status`.
+`POST /api/analyze` accepts multipart form fields `file` (DOCX, max 5 MB), `rules` (JSON array of 1–15 rules), and the `Authorization: Bearer <customer-key>` header (request-scoped). The response includes `violations`, `count`, `rejected_unverified`, `blocks_scanned` and `rules_scanned`. A finding contains `rule_id`, `block_id`, `location`, `quote`, `explanation` and `status`.
 
 **Production note:** This is a stateless request flow, not a complete enterprise DLP/compliance platform. It does not include authentication, persistent audit trails, quotas, OCR or a calibrated live-provider precision/recall evaluation. Do not treat zero findings as proof of compliance.
 
