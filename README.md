@@ -6,24 +6,23 @@
 
 Upload a DOCX · Write rules in plain English · Inspect potential violations · Export findings
 
-[![Open live app](https://img.shields.io/badge/OPEN_LIVE_APP-2563EB?style=for-the-badge)](https://documentguard-ai.vercel.app)
 [![Try sample document](https://img.shields.io/badge/GET_SAMPLE_DOCX-0F766E?style=for-the-badge)](assets/sample.docx)
 [![View our AI prompts](https://img.shields.io/badge/VIEW_AI_PROMPTS-334155?style=for-the-badge)](docs/PROMPTS.md)
 [![Architecture](https://img.shields.io/badge/ARCHITECTURE-64748B?style=for-the-badge)](docs/ARCHITECTURE.md)
 
 </div>
 
-## See the workflow
+## Product preview
 
-![Animated walkthrough of DocumentGuard: connect customer key, upload a Word document, define a rule, review an evidence-backed finding. Illustrative UI sequence using a mocked AI response.](assets/live-demo.gif)
+![DocumentGuard AI interface mockup with document upload, review rules and evidence-backed findings](assets/product-mockup.svg)
 
-*Animated product walkthrough (illustrative; AI response mocked). For a real analysis, use the [live application](https://documentguard-ai.vercel.app) and your own OpenAI key. This GIF is **not** proof of live model accuracy.*
+*Static product mockup with fictional sample data. This is a visual preview, not a live demo or an AI result.*
 
 ## Try it in 60 seconds
 
 | Step | What the reviewer does | What to expect |
 |:---:|---|---|
-| **01** | [Open the application](https://documentguard-ai.vercel.app) and select **Connect key** | Enter your **own** OpenAI API key in a hidden field. No shared or preloaded key. |
+| **01** | Run the application locally (instructions below), then select **Connect key** | Enter your **own** OpenAI API key in a hidden field. No shared or preloaded key. |
 | **02** | [Download the sample DOCX](assets/sample.docx) and upload it | The app accepts text-based Word documents up to **5 MB**, including tables. |
 | **03** | Enter a rule: `Flag statements disclosing numerical operational capability or detection range.` | Rules are interpreted semantically by the model, not matched with a fixed regex list. |
 | **04** | Select **Run analysis** | See rule, exact quote, paragraph/table location, explanation and review status. |
@@ -63,7 +62,7 @@ flowchart LR
 
 | I want to… | Open |
 |---|---|
-| **Try the product** | [Live application](https://documentguard-ai.vercel.app) |
+| **Preview the interface** | [Product mockup](assets/product-mockup.svg) |
 | **Understand the prompts** | **[Actual detection and verification prompts](docs/PROMPTS.md)** |
 | **See the architecture and security boundaries** | [Architecture](docs/ARCHITECTURE.md) |
 | **Read design trade-offs** | [Engineering decisions](docs/ENGINEERING.md) |
