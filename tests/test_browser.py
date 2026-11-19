@@ -34,13 +34,13 @@ def test_byok_upload_review_export(tmp_path):
         requests = []
         def intercept(route):
             body = route.request.post_data or ''
-            requests.append(body)
+            requests.append((body, route.request.headers.get('authorization', '')))
             route.fulfill(status=200, content_type='application/json', body=json.dumps(SAMPLE))
         if os.getenv('E2E_BASE_URL'):
             page.route('**/api/analyze', intercept)
         else:
             # about:blank has no URL origin; intercept fetch at the browser API boundary.
-            page.evaluate('''(sample) => { window.__captured = []; window.fetch = async (url, options) => { window.__captured.push(Array.from(options.body.entries()).map(([key,value]) => [key, value instanceof File ? value.name : value])); return new Response(JSON.stringify(sample), {status:200,headers:{'Content-Type':'application/json'}}); }; }''', SAMPLE)
+            page.evaluate('''(sample) => { window.__captured = []; window.fetch = async (url, options) => { window.__captured.push({fields:Array.from(options.body.entries()).map(([key,value]) => [key, value instanceof File ? value.name : value]),authorization:options.headers.Authorization}); return new Response(JSON.stringify(sample), {status:200,headers:{'Content-Type':'application/json'}}); }; }''', SAMPLE)
         page.locator('#file').set_input_files(str(sample_path))
         page.locator('#run').click()
         assert 'Connect your OpenAI API key' in page.locator('#status').inner_text()
@@ -56,11 +56,13 @@ def test_byok_upload_review_export(tmp_path):
         assert '50 km' in page.locator('.quote').inner_text()
         if os.getenv('E2E_BASE_URL'):
             assert len(requests) == 1
-            assert 'sk-fake-e2e' in requests[0]
+            assert 'sk-fake-e2e' not in requests[0][0]
+            assert requests[0][1].startswith('Bearer sk-fake-e2e')
         else:
             captured = page.evaluate('window.__captured')
             assert len(captured) == 1
-            assert any(key == 'api_key' and 'sk-fake-e2e' in value for key,value in captured[0])
+            assert all(key != 'api_key' for key,value in captured[0]['fields'])
+            assert captured[0]['authorization'].startswith('Bearer sk-fake-e2e')
         assert 'Detection range is 50 km.' not in page.locator('#status').inner_text()
         with page.expect_download() as download:
             page.locator('#export').click()
