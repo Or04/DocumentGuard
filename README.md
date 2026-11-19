@@ -66,6 +66,7 @@ flowchart LR
 | **Read design trade-offs** | [Engineering decisions](docs/ENGINEERING.md) |
 | **Explore the product planning conversation** | [Product Planning Conversation](docs/Product_Planning_Conversation.md) |
 | **Inspect test coverage and limitations** | [QA / E2E report](docs/TESTING.md) |
+| **Review BYOK security and release gates** | [Security checklist](docs/SECURITY.md) |
 | **Review agent integration** | [Agent skill](skills/documentguard/SKILL.md) |
 | **Check delivery readiness** | [Delivery status](docs/DELIVERY_STATUS.md) |
 
