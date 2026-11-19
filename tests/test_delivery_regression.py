@@ -17,8 +17,7 @@ def make_doc(paragraphs=(),tables=()):
 
 def request(blob,rules, key='sk-fake-for-testing-never-real-1234'):
     data={'rules':json.dumps(rules)}
-    if key is not None:data['api_key']=key
-    return client.post('/api/analyze',files={'file':('example.docx',blob,'application/vnd.openxmlformats-officedocument.wordprocessingml.document')},data=data)
+    return client.post('/api/analyze',files={'file':('example.docx',blob,'application/vnd.openxmlformats-officedocument.wordprocessingml.document')},data=data,headers={'Authorization':'Bearer '+key} if key is not None else {})
 
 def test_full_sample_document_parses():
     from pathlib import Path
@@ -30,7 +29,7 @@ def test_full_sample_document_parses():
 
 def test_without_key_fails_closed():
     blob=make_doc(['The detection range is 50 km.'])
-    assert request(blob,['Flag numeric operational performance'],key=None).status_code==422
+    assert request(blob,['Flag numeric operational performance'],key=None).status_code==400
 
 def test_tables_are_parsed():
     blocks=parse_docx(make_doc(tables=[['Detection range is 50 km','Public']]))
