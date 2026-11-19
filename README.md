@@ -66,7 +66,7 @@ python -m playwright install chromium
 pytest -q
 ```
 
-The browser E2E test runs in Chromium, uses an intercepted AI response and exercises key connection, DOCX upload, rendering, JSON export and disconnect. API tests exercise actual FastAPI request parsing and BYOK behavior. Model-orchestration tests use mocked model responses. **No live OpenAI accuracy or billing test was executed**; see [QA report](docs/TESTING.md). A real customer trial needs an authorized key and approved non-sensitive sample document.
+Browser tests run in real Chromium, including a full application-layer flow from the UI through the FastAPI endpoint, DOCX parser, grounded finding validation and response rendering. Both E2E tests mock the external OpenAI API and do not require a paid key. Other tests exercise HTTP validation, security and model orchestration. **No live OpenAI accuracy or billing test was executed**; see [QA report](docs/TESTING.md). A real customer trial needs an authorized key and approved non-sensitive sample document.
 
 ## Deploy to Vercel
 

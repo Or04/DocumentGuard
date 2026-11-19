@@ -4,13 +4,14 @@ Execution date: **2026-11-19** · Candidate: DocumentGuard AI BYOK · Tests are 
 
 ## Actual verified test results
 
-**27 passed** in `pytest -q` with system Chromium (`CHROMIUM_PATH=/usr/bin/chromium`). No skips at this run. Tests cover:
+**28 passed** in `pytest -q` with system Chromium (`CHROMIUM_PATH=/usr/bin/chromium`). No skips at this run. Tests cover:
 
 - DOCX extraction, corrupt/oversized inputs, tables, rules and bounds.
 - Rule/block/quote grounding; rejection of hallucinated evidence; deduplication.
 - Model orchestration with stubbed OpenAI responses: confirmed, uncertain, rejected and hallucinated scenarios.
 - API upload, form validation, absence/invalid format of BYOK credentials, error sanitization, request-scoped key handoff and zero key reflection.
-- Actual Chromium UI journey: no key → connect fake key → DOCX upload → intercept AI HTTP response → render evidence → download JSON → disconnect. This test **does not** invoke OpenAI; it runs the actual browser interface and its request-handling code with a simulated AI response.
+- Actual Chromium UI journey: no key → connect fake key → DOCX upload → intercept AI HTTP response → render evidence → download JSON → disconnect.
+- Chromium-to-FastAPI multipart integration: real browser UI → HTTP request interception → actual FastAPI endpoint → DOCX parser → exact quote validation → result rendering. OpenAI is substituted with deterministic fake responses. Playwright strips intercepted File bytes, so the test harness reinserts the known DOCX fixture before forwarding to the backend. This is a full application-layer E2E test **with the external provider mocked**, not a live OpenAI run.
 
 Run:
 
